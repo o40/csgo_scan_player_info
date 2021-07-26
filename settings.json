@@ -1,0 +1,5 @@
+{
+    "path": "D:\\steam\\steamapps\\common\\Counter-Strike Global Offensive\\csgo\\console.log",
+    "key": "<your steam API key goes here>",
+    "command": "echo"
+}
