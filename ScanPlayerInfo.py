@@ -13,27 +13,40 @@ def _get_steam2_id_from_string(console_log_string):
         return result.group()
     return None
 
+
+def _public_profile(summary):
+    return summary['communityvisibilitystate'] == 3
+
+
+def _get_bans_info(bans):
+    num_vac_bans = bans['NumberOfVACBans']
+    days_since_last_ban = bans['DaysSinceLastBan']
+
+    if num_vac_bans == 0:
+        return "has no VAC bans"
+    else:
+        return f"has {num_vac_bans} VAC ban ({days_since_last_ban} days ago)"
+
+def _get_account_age_in_years(summary):
+    time_created = datetime.utcfromtimestamp(summary['timecreated'])
+    time_now = datetime.now()
+    return (time_now - time_created).days
+
+
 def _get_summary_string(summary, numfriends, bans):
     name = summary['personaname']
-    profile_visibility = summary['communityvisibilitystate']
-    private_profile = profile_visibility != 3
 
-    if not private_profile:
+
+    if _public_profile(summary):
         country_code = summary.get('loccountrycode', '?')
-        num_vac_bans = bans['NumberOfVACBans']
-        days_since_last_ban = bans['DaysSinceLastBan']
-        days_string = ""
-        if days_since_last_ban > 0:
-            days_string = f"({days_since_last_ban} days since last ban)"
 
         if numfriends < 0:
             numfriends = '?'
 
-        time_created = datetime.utcfromtimestamp(summary['timecreated'])
-        time_now = datetime.now()
-        delta_time = time_now - time_created
+        days = _get_account_age_in_years(summary)
+        ban_info = _get_bans_info(bans)
 
-        return f"{name} ({country_code}) created steam account {delta_time.days} days ago, has {numfriends} friends, and has {num_vac_bans} VAC bans {days_string}"
+        return f"{name} ({country_code}) created steam account {days} days ago, has {numfriends} friends, and {ban_info}"
     else:
         return f"{name} has a private profile"
 
